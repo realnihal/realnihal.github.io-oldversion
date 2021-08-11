@@ -1,0 +1,3 @@
+I"À<h1 id="food-vision-using-an-effecientnetx-and-tensorflow"><strong>Food Vision Using an EffecientNetX and Tensorflow</strong></h1>
+<p>We are using the <strong>Food101</strong> standard database to create a deep learning model that can tell the difference and make predictions between 101 classes of food. using all 75,750 training images and 25,250 testing images. We will also use mixed learning to increase the speed of the training process.</p>
+:ET
