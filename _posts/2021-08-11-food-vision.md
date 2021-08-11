@@ -18,7 +18,7 @@ We will use the power of transfer learning by incorporating the EfficientNetX ar
 
 
 
-##Checking for the right GPU
+## Checking for the right GPU
 Since we are planning to use mixed learning, we need a compatible GPU.
 This model is being trained on Google's colab and they provides 3 types of free Nvidia GPU's.
 
@@ -59,7 +59,7 @@ There is a known bug with tensorflow 2.5.0 specifically that does'nt work with m
 !pip install tensorflow==2.4.1
 ```
 
-##Importing the Data
+## Importing the Data
 We have created some helper functions that we are importing into our project.
 
 
@@ -162,7 +162,7 @@ This may take a few minutes since the data is so large.
     [1mDataset food101 downloaded and prepared to /root/tensorflow_datasets/food101/2.0.0. Subsequent calls will reuse this data.[0m
 
 
-##Data exploration
+## Data exploration
 
 lets see what the downloaded data contains. This allows us to get a more better idea of how to preprocess the data.
 
@@ -434,7 +434,7 @@ train_data, test_data
 
 
 
-##Impementing Mixed Precision
+## Impementing Mixed Precision
 Now lets implement Mixed precision. Here we can try to use flast 16 on some layers to improve speed and efficiency. It is only compatible with GPU's with a compute score of 7+.
 
 
@@ -553,7 +553,7 @@ model_checkpoint = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                       verbose=1)
 ```
 
-##Fitting the data on the Feature-Extraction model.
+## Fitting the data on the Feature-Extraction model.
 
 We are using the early_stopping callback to prevent any major overfitting and running the training for 3 epochs. We are testing on only 15 percent of the data to save time. Yet this is going to take a while processing over 100,000 images per epoch. So, I'm going to grab a cup of coffee.
 
@@ -584,7 +584,7 @@ history_101_food_classes_feature_extract = model.fit(train_data,
     Epoch 00003: val_accuracy did not improve from 0.71478
 
 
-##Viewing the results, Saving our Feature-Extraction model.
+## Viewing the results, Saving our Feature-Extraction model.
 
 
 
@@ -662,7 +662,7 @@ results_feature_extract_model == test_eval
 
 
 
-##Making our Fine-Tuning model
+## Making our Fine-Tuning model
 
 To fine tune the model lets unfreeze the layers in our EfficientNet.
 
@@ -714,7 +714,7 @@ loaded_model.compile(loss="sparse_categorical_crossentropy", # sparse_categorica
                         metrics=["accuracy"])
 ```
 
-##Fitting the data on our Fine-Tuning model.
+## Fitting the data on our Fine-Tuning model.
 
 We are running the training for 100 epochs. The training will be stopped when the early stopping function is called. This is again going to take a while processing over 100,000 images per epoch. So, I'm going to grab another cup of coffee.
 
@@ -750,7 +750,7 @@ history_101_food_classes_all_data_fine_tune = loaded_model.fit(train_data,
     2368/2368 [==============================] - 290s 122ms/step - loss: 0.0796 - accuracy: 0.9808 - val_loss: 1.0898 - val_accuracy: 0.7773
 
 
-##Viewing the results, Saving our Fine-Tuning model.
+## Viewing the results, Saving our Fine-Tuning model.
 
 
 
@@ -824,7 +824,7 @@ files.download("/content/file.zip")
 files.download("/content/file2.zip")
 ```
 
-##Conclusions
+## Conclusions
 
 We acheived an accuracy of about 78.3%. With this we beat the score set by the original [DeepFood](https://arxiv.org/ftp/arxiv/papers/1606/1606.05675.pdf) paper.
 

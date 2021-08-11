@@ -1,4 +1,4 @@
-I"Më<h1 id="food-vision-using-an-effecientnetx-and-tensorflow"><strong>Food Vision Using an EffecientNetX and Tensorflow</strong></h1>
+I"ië<h1 id="food-vision-using-an-effecientnetx-and-tensorflow"><strong>Food Vision Using an EffecientNetX and Tensorflow</strong></h1>
 <p>We are using the <strong>Food101</strong> standard database to create a deep learning model that can tell the difference and make predictions between 101 classes of food. using all 75,750 training images and 25,250 testing images. We will also use mixed learning to increase the speed of the training process.</p>
 
 <p>Our goal is to beat the original <a href="https://arxiv.org/ftp/arxiv/papers/1606/1606.05675.pdf">DeepFood </a> paper. they have an accuracy of 77.4%.</p>
@@ -270,7 +270,7 @@ array([[[135, 156, 175],
 
 <p><img src="\img\posts\foodvision\output_22_1.png" alt="png" /></p>
 
-<p>##Preprocessing the data</p>
+<h2 id="preprocessing-the-data">Preprocessing the data</h2>
 
 <p>from our initial data exploration we found that we need to do the following things:</p>
 
