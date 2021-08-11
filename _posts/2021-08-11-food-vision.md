@@ -334,7 +334,7 @@ plt.axis(False)
 
 
     
-![png](output_22_1.png)
+![png](\img\posts\foodvision\output_22_1.png)
     
 
 
