@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Start of a new journey!"
-subtitle: "Background of this blog and why it exists."
+subtitle: "Story of this blog and why it exists."
 background: '/img/posts/firstpost/aerial-3246120_1280.jpg'
 ---
 

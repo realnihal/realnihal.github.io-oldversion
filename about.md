@@ -1,0 +1,8 @@
+---
+layout: page
+title: About Me
+description: This is what I do.
+background: '/img/bg-about.jpg'
+---
+
+I'm Nihal Puram and this is my blog. I'm an aerospace engineering student at the Indian Institute of Technology, Madras. I am also a Self-Taught programmer/Machine Learning Enthusiast. You can check out my Social Media and feel free to reach out to me.
