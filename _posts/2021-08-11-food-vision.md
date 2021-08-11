@@ -15,8 +15,7 @@ We will use the power of transfer learning by incorporating the EfficientNetX ar
 1.   Feature Extraction
 2.   Fine Tuning
 
-
-
+Here is the [Link to the complete github repository](https://github.com/realnihal/Food-Vision-Using-Tensorflow).
 
 ## Checking for the right GPU
 Since we are planning to use mixed learning, we need a compatible GPU.
