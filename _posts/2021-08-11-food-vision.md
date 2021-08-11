@@ -330,15 +330,11 @@ plt.axis(False)
 
     (-0.5, 511.5, 511.5, -0.5)
 
-
-
-
     
 ![png](\img\posts\foodvision\output_22_1.png)
-    
 
 
-##Preprocessing the data
+## Preprocessing the data
 
 from our initial data exploration we found that we need to do the following things:
 
