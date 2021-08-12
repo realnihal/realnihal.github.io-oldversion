@@ -113,54 +113,6 @@ This may take a few minutes since the data is so large.
                                              with_info=True)
 ```
 
-    [1mDownloading and preparing dataset food101/2.0.0 (download: 4.65 GiB, generated: Unknown size, total: 4.65 GiB) to /root/tensorflow_datasets/food101/2.0.0...[0m
-
-
-
-    HBox(children=(FloatProgress(value=1.0, bar_style='info', description='Dl Completed...', max=1.0, style=Progre…
-
-
-
-    HBox(children=(FloatProgress(value=1.0, bar_style='info', description='Dl Size...', max=1.0, style=ProgressSty…
-
-
-
-    HBox(children=(FloatProgress(value=1.0, bar_style='info', description='Extraction completed...', max=1.0, styl…
-
-
-    
-    
-    
-    
-    
-    
-
-
-
-    HBox(children=(FloatProgress(value=1.0, bar_style='info', max=1.0), HTML(value='')))
-
-
-    Shuffling and writing examples to /root/tensorflow_datasets/food101/2.0.0.incompleteH1HN4N/food101-train.tfrecord
-
-
-
-    HBox(children=(FloatProgress(value=0.0, max=75750.0), HTML(value='')))
-
-
-
-    HBox(children=(FloatProgress(value=1.0, bar_style='info', max=1.0), HTML(value='')))
-
-
-    Shuffling and writing examples to /root/tensorflow_datasets/food101/2.0.0.incompleteH1HN4N/food101-validation.tfrecord
-
-
-
-    HBox(children=(FloatProgress(value=0.0, max=25250.0), HTML(value='')))
-
-
-    [1mDataset food101 downloaded and prepared to /root/tensorflow_datasets/food101/2.0.0. Subsequent calls will reuse this data.[0m
-
-
 ## Data exploration
 
 lets see what the downloaded data contains. This allows us to get a more better idea of how to preprocess the data.
@@ -170,9 +122,6 @@ lets see what the downloaded data contains. This allows us to get a more better 
 #Features of Food101 from TFDS
 ds_info.features
 ```
-
-
-
 
     FeaturesDict({
         'image': Image(shape=(None, None, 3), dtype=tf.uint8),
@@ -210,18 +159,8 @@ class_names[:10] #only print 20 to avoid spamming the output
 ```python
 #Lets take one sample to dive deeper and view our data
 train_one_sample = train_data.take(1)
-train_one_sample
-```
 
 
-
-
-    <TakeDataset shapes: ((None, None, 3), ()), types: (tf.uint8, tf.int64)>
-
-
-
-
-```python
 #Printing the image features
 for image, label in train_one_sample:
   print(f'''
