@@ -1,0 +1,277 @@
+I"�n<h2 id="introduction">Introduction</h2>
+
+<p>The goal of this project is to give a fair estimate of covid cases in India. I came across an published article on <a href="https://reader.elsevier.com/reader/sd/pii/S2211379721000048?token=96B6C9E2813943F5D2FE4882F66A79AFA5E8779BC525996AA7E6F9EE1B924E254C50FC4994A800B07CE92EADF065D17B&amp;originRegion=eu-west-1&amp;originCreation=20210815022455">Forecasting COVID-19 cases</a>. They were able to make predections with an error of less that 2%. Here I have tried to implement their learnings and try to make predictions for the next few days.</p>
+
+<h2 id="importing-data">Importing data</h2>
+
+<p>I have imported the covid-19 data from <a href="https://documenter.getpostman.com/view/10724784/SzYXXKmA">this source</a>. The data is collected by volunteers and pre-cleaned. We get access to various metrics but only interested in the “Daily Case” counts.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># importing the Covid-19 time series data
+</span><span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://api.covid19india.org/csv/latest/case_time_series.csv'</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">'case_time_series.csv'</span>
+<span class="n">urllib</span><span class="p">.</span><span class="n">request</span><span class="p">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>('case_time_series.csv', &lt;http.client.HTTPMessage at 0x7f6c66c41110&gt;)
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># reading the covid-19 data using pandas
+</span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"case_time_series.csv"</span><span class="p">,</span> 
+                 <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s">"Date"</span><span class="p">],</span> 
+                 <span class="n">index_col</span><span class="o">=</span><span class="p">[</span><span class="s">"Date"</span><span class="p">])</span> <span class="c1"># parse the date column (tell pandas column 1 is a datetime)
+</span><span class="n">df</span><span class="p">.</span><span class="n">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Date_YMD</th>
+      <th>Daily Confirmed</th>
+      <th>Total Confirmed</th>
+      <th>Daily Recovered</th>
+      <th>Total Recovered</th>
+      <th>Daily Deceased</th>
+      <th>Total Deceased</th>
+    </tr>
+    <tr>
+      <th>Date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2020-01-30</th>
+      <td>2020-01-30</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2020-01-31</th>
+      <td>2020-01-31</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2020-02-01</th>
+      <td>2020-02-01</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2020-02-02</th>
+      <td>2020-02-02</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2020-02-03</th>
+      <td>2020-02-03</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># just taking the daily covid cases.
+</span><span class="n">daily_cases</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">"Daily Confirmed"</span><span class="p">]).</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">"Daily Confirmed"</span><span class="p">:</span> <span class="s">"cases"</span><span class="p">})</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># plotting the data
+</span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="n">daily_cases</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">"Covid Casesy"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">title</span><span class="p">(</span><span class="s">"Covid Cases per day in India"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">);</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="\img\posts\covid19\output_4_0.png" alt="png" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Normalizing the data
+</span><span class="n">timesteps</span> <span class="o">=</span> <span class="n">daily_cases</span><span class="p">.</span><span class="n">index</span><span class="p">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">cases</span> <span class="o">=</span> <span class="n">daily_cases</span><span class="p">[</span><span class="s">"cases"</span><span class="p">].</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">cases</span> <span class="o">=</span> <span class="n">cases</span><span class="o">/</span><span class="mi">414280</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">get_labelled_windows</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+  <span class="s">"""
+  Creates labels for windowed dataset.
+
+  E.g. if horizon=1 (default)
+  Input: [1, 2, 3, 4, 5, 6] -&gt; Output: ([1, 2, 3, 4, 5], [6])
+  """</span>
+  <span class="k">return</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="n">horizon</span><span class="p">],</span> <span class="n">x</span><span class="p">[:,</span> <span class="o">-</span><span class="n">horizon</span><span class="p">:]</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">HORIZON</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">WINDOW_SIZE</span> <span class="o">=</span> <span class="mi">30</span> 
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># creating data windows
+</span><span class="k">def</span> <span class="nf">make_windows</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+  <span class="c1"># 1. Create a window of specific window_size (add the horizon on the end for later labelling)
+</span>  <span class="n">window_step</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">window_size</span><span class="o">+</span><span class="n">horizon</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+  <span class="c1"># print(f"Window step:\n {window_step}")
+</span>  <span class="c1"># 2. Create a 2D array of multiple window steps (minus 1 to account for 0 indexing)
+</span>  <span class="n">window_indexes</span> <span class="o">=</span> <span class="n">window_step</span> <span class="o">+</span> <span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="p">(</span><span class="n">window_size</span><span class="o">+</span><span class="n">horizon</span><span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">).</span><span class="n">T</span> <span class="c1"># create 2D array of windows of size window_size
+</span>  <span class="c1"># print(f"Window indexes:\n {window_indexes[:3], window_indexes[-3:], window_indexes.shape}"
+</span>  <span class="c1"># 3. Index on the target array (time series) with 2D array of multiple window steps
+</span>  <span class="n">windowed_array</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">window_indexes</span><span class="p">]</span>
+  <span class="c1"># 4. Get the labelled windows
+</span>  <span class="n">windows</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">get_labelled_windows</span><span class="p">(</span><span class="n">windowed_array</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="n">windows</span><span class="p">,</span> <span class="n">labels</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="n">full_windows</span><span class="p">,</span> <span class="n">full_labels</span> <span class="o">=</span> <span class="n">make_windows</span><span class="p">(</span><span class="n">cases</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="n">WINDOW_SIZE</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="n">HORIZON</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">make_train_test_splits</span><span class="p">(</span><span class="n">windows</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_split</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+  <span class="s">"""
+  Splits matching pairs of windows and labels into train and test splits.
+  """</span>
+  <span class="n">split_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">windows</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">test_split</span><span class="p">))</span> <span class="c1"># this will default to 80% train/20% test
+</span>  <span class="n">train_windows</span> <span class="o">=</span> <span class="n">windows</span><span class="p">[:</span><span class="n">split_size</span><span class="p">]</span>
+  <span class="n">train_labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[:</span><span class="n">split_size</span><span class="p">]</span>
+  <span class="n">test_windows</span> <span class="o">=</span> <span class="n">windows</span><span class="p">[</span><span class="n">split_size</span><span class="p">:]</span>
+  <span class="n">test_labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">split_size</span><span class="p">:]</span>
+  <span class="k">return</span> <span class="n">train_windows</span><span class="p">,</span> <span class="n">test_windows</span><span class="p">,</span> <span class="n">train_labels</span><span class="p">,</span> <span class="n">test_labels</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">train_windows</span><span class="p">,</span> <span class="n">test_windows</span><span class="p">,</span> <span class="n">train_labels</span><span class="p">,</span> <span class="n">test_labels</span> <span class="o">=</span> <span class="n">make_train_test_splits</span><span class="p">(</span><span class="n">full_windows</span><span class="p">,</span> <span class="n">full_labels</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">os</span>
+<span class="c1"># Create a function to implement a ModelCheckpoint callback with a specific filename 
+</span><span class="k">def</span> <span class="nf">create_model_checkpoint</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="s">"model_experiments"</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">callbacks</span><span class="p">.</span><span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">),</span> <span class="c1"># create filepath to save model
+</span>                                            <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="c1"># only output a limited amount of text
+</span>                                            <span class="n">save_best_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> 
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="c1"># Let's build an Stacked LSTM model with the Functional API
+</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">layers</span><span class="p">.</span><span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">WINDOW_SIZE</span><span class="p">))</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Lambda</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">tf</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))(</span><span class="n">inputs</span><span class="p">)</span> <span class="c1"># expand input dimension to be compatible with LSTM
+</span><span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">LSTM</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s">"relu"</span><span class="p">,</span> <span class="n">return_sequences</span><span class="o">=</span><span class="bp">True</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span> 
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">LSTM</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s">"relu"</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s">"relu"</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">HORIZON</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">model_5</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"model_5_lstm"</span><span class="p">)</span>
+
+<span class="c1"># Compile model
+</span><span class="n">model_5</span><span class="p">.</span><span class="nb">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s">"mae"</span><span class="p">,</span>
+                <span class="n">optimizer</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">optimizers</span><span class="p">.</span><span class="n">Adam</span><span class="p">(</span><span class="mf">0.0005</span><span class="p">))</span>
+
+<span class="n">history</span> <span class="o">=</span> <span class="n">model_5</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_windows</span><span class="p">,</span>
+            <span class="n">train_labels</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">test_windows</span><span class="p">,</span> <span class="n">test_labels</span><span class="p">),</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">create_model_checkpoint</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">model_5</span><span class="p">.</span><span class="n">name</span><span class="p">)])</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># evaluating the best model
+</span><span class="n">model_5</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">models</span><span class="p">.</span><span class="n">load_model</span><span class="p">(</span><span class="s">"model_experiments/model_5_lstm/"</span><span class="p">)</span>
+<span class="n">model_5</span><span class="p">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_windows</span><span class="p">,</span> <span class="n">test_labels</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>WARNING:tensorflow:Layer lstm will not use cuDNN kernels since it doesn't meet the criteria. It will use a generic GPU kernel as fallback when running on GPU.
+WARNING:tensorflow:Layer lstm_1 will not use cuDNN kernels since it doesn't meet the criteria. It will use a generic GPU kernel as fallback when running on GPU.
+4/4 [==============================] - 0s 4ms/step - loss: 0.0271
+
+
+
+
+
+0.027053499594330788
+</code></pre></div></div>
+
+<h2 id="results">Results</h2>
+
+<p>we can see that we have achieved an error of 2.7% which is slightly higher than the original <a href="https://reader.elsevier.com/reader/sd/pii/S2211379721000048?token=96B6C9E2813943F5D2FE4882F66A79AFA5E8779BC525996AA7E6F9EE1B924E254C50FC4994A800B07CE92EADF065D17B&amp;originRegion=eu-west-1&amp;originCreation=20210815022455">paper</a>. Lets try to use this model to predict the future cases.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">make_preds</span><span class="p">(</span><span class="n">pcases</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="n">no_of_preds</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">no_of_preds</span><span class="p">):</span>
+        <span class="n">eval_case</span> <span class="o">=</span> <span class="n">pcases</span><span class="p">[</span><span class="o">-</span><span class="mi">30</span><span class="p">:].</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">30</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">eval_case</span><span class="p">)</span>
+        <span class="n">pcases</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">pcases</span><span class="p">,</span><span class="n">pred</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pcases</span>
+<span class="n">pred_cases</span> <span class="o">=</span> <span class="n">make_preds</span><span class="p">(</span><span class="n">cases</span><span class="p">,</span> <span class="n">model_5</span><span class="p">)</span>
+<span class="n">pred_cases</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:]</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>array([0.21659741, 0.20328695, 0.19203615, 0.18219881, 0.17360687,
+       0.16575938, 0.1582801 , 0.15125737, 0.14482188, 0.13891993])
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pred_cases</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="output_17_0.png" alt="png" /></p>
+
+<p>We can see the rising trend of an upcoming third wave in the country. We have to consider a lot of things before we take this model seriously, such as:</p>
+
+<ol>
+  <li>
+    <p>We are using a single feature (univariate) to make the prediction. this may not be accurate as the real trends could be more correlated to  other factors.</p>
+  </li>
+  <li>
+    <p>The further in the future we want to predict, the less accurate the model becomes. This means that the actual slope may not be accurate. The peak or duration of the third wave might by varying a lot.</p>
+  </li>
+</ol>
+
+<p>But nevertheless, this is an alarming sign that the public should be prepared. I really wish that this does’nt happen and the model is wrong, but it’s still a good idea to increase precautions and try to save yoursleves.</p>
+:ET
