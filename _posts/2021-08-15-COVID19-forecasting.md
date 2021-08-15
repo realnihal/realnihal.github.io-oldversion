@@ -8,12 +8,11 @@ background: '/img/posts/covid19/covid19.jpeg'
 
 The goal of this project is to give a fair estimate of covid cases in India. I came across an published article on [Forecasting COVID-19 cases](https://reader.elsevier.com/reader/sd/pii/S2211379721000048?token=96B6C9E2813943F5D2FE4882F66A79AFA5E8779BC525996AA7E6F9EE1B924E254C50FC4994A800B07CE92EADF065D17B&originRegion=eu-west-1&originCreation=20210815022455). They were able to make predections with an error of less that 2%. Here I have tried to implement their learnings and try to make predictions for the next few days.
 
+You can check out the complete code [here](https://github.com/realnihal/Forecasting-COVID-19-cases).
+
 ## Importing data
 
 I have imported the covid-19 data from [this source](https://documenter.getpostman.com/view/10724784/SzYXXKmA). The data is collected by volunteers and pre-cleaned. We get access to various metrics but only interested in the "Daily Case" counts.
-
-
-
 
 ```python
 # importing the Covid-19 time series data
@@ -22,27 +21,7 @@ url = 'https://api.covid19india.org/csv/latest/case_time_series.csv'
 filename = 'case_time_series.csv'
 urllib.request.urlretrieve(url, filename)
 ```
-
-
-
-
-    ('case_time_series.csv', <http.client.HTTPMessage at 0x7f6c66c41110>)
-
-
-
-
-```python
-# reading the covid-19 data using pandas
-import pandas as pd
-df = pd.read_csv("case_time_series.csv", 
-                 parse_dates=["Date"], 
-                 index_col=["Date"]) # parse the date column (tell pandas column 1 is a datetime)
-```
-
-```python
-# just taking the daily covid cases.
-daily_cases = pd.DataFrame(df["Daily Confirmed"]).rename(columns={"Daily Confirmed": "cases"})
-```
+We extract the required data from our dataset and plot it to visualize the initial conditions.
 
 ```python
 # plotting the data
@@ -155,3 +134,7 @@ We can see the rising trend of an upcoming third wave in the country. We have to
 2. The further in the future we want to predict, the less accurate the model becomes. This means that the actual slope may not be accurate. The peak or duration of the third wave might by varying a lot.
 
 But nevertheless, this is an alarming sign that the public should be prepared. I really wish that this does'nt happen and the model is wrong, but it's still a good idea to increase precautions and try to save yoursleves.
+
+[Click here to check out the complete code](https://github.com/realnihal/Forecasting-COVID-19-cases).
+
+Please feel free to share your thoughts on this at any of my socials (*linked below*). Would love to hear from you. Be safe and Peace out!
