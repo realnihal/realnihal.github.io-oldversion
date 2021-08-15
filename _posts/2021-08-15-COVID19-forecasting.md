@@ -106,16 +106,7 @@ history = model_5.fit(train_windows,
 model_5 = tf.keras.models.load_model("model_experiments/model_5_lstm/")
 model_5.evaluate(test_windows, test_labels)
 ```
-
-    WARNING:tensorflow:Layer lstm will not use cuDNN kernels since it doesn't meet the criteria. It will use a generic GPU kernel as fallback when running on GPU.
-    WARNING:tensorflow:Layer lstm_1 will not use cuDNN kernels since it doesn't meet the criteria. It will use a generic GPU kernel as fallback when running on GPU.
-    4/4 [==============================] - 0s 4ms/step - loss: 0.0271
-    
-
-
-
-
-    0.027053499594330788
+ 0.027053499594330788
 
 
 
