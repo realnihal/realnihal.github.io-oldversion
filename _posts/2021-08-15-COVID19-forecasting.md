@@ -51,7 +51,7 @@ The time-series data that we have must be converted into windows. It defines the
 Training and testing data is created by splitting the windowed data that we have. I have used a split ratio of 0.2.
 We are creating a model checkpointing callback using the [tensorflow callback function](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint). This allows us to save only the best model that is trained across many epochs.
 
-## Creating and training a Model
+## Creating and Training a Model
 
 ```python
 import TensorFlow as tf
