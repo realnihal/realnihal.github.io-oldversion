@@ -47,7 +47,7 @@ cases = daily_cases["cases"].to_numpy()
 cases = cases/414280
 ```
 
-The time-series data that we have must be converted into windows. Basically it defines the no of days the model looks into the past in-order to predict the future. I have chose to have the window size as 30 and the predictin horizon of 1 day.
+The time-series data that we have must be converted into windows. Basically it defines the no of days the model looks into the past in-order to predict the future. I have chosen to have the window size as 30 and the predictin horizon of 1 day. You can check out the [full code](https://github.com/realnihal/Forecasting-COVID-19-cases) to get an idea of how I did it.
 Training and testing data is created by spliting the windowed data that we have. I have used a spilt ratio of 0.2.
 We are creating a model checkpointing callback using the [tensorflow callback function](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint). This allows us to save only the best model that is trained across many epochs.
 
