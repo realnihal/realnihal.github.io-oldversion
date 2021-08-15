@@ -2,7 +2,7 @@
 layout: post
 title: "Forecasting COVID-19 Case in India with deep learning"
 subtitle: "Using deep learning to try and predict the near future in Indian Covid cases."
-background: '/img/posts/tensorflowcertificate/162882711420.png'
+background: '/img/posts/covid19/covid.jpeg'
 ---
 ## Introduction
 
