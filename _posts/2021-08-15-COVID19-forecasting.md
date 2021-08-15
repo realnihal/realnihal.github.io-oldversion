@@ -47,7 +47,7 @@ cases = daily_cases["cases"].to_numpy()
 cases = cases/414280
 ```
 
-The time-series data that we have must be converted into windows. Basically it defines the no of days the model looks into the past in-order to predict the future. I have chosen to have the window size as 30 and the predictin horizon of 1 day. You can check out the [full code](https://github.com/realnihal/Forecasting-COVID-19-cases) to get an idea of how I did it.
+The time-series data that we have must be converted into windows. Basically it defines the no of days the model looks into the past in-order to predict the future. I have chosen to have the window size as 30 and the predicting horizon of 1 day. You can check out the [full code](https://github.com/realnihal/Forecasting-COVID-19-cases) to get an idea of how I did it.
 Training and testing data is created by spliting the windowed data that we have. I have used a spilt ratio of 0.2.
 We are creating a model checkpointing callback using the [tensorflow callback function](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint). This allows us to save only the best model that is trained across many epochs.
 
@@ -78,7 +78,8 @@ history = model_5.fit(train_windows,
             validation_data=(test_windows, test_labels),
             callbacks=[create_model_checkpoint(model_name=model_5.name)])
 ```
-
+the main reason for stacking LSTM is to allow for greater model complexity. In case of a simple feedforward net we stack layers to create a hierarchical feature representation of the input data to then use for some machine learning task. The same applies for stacked LSTM's.
+At every time step an LSTM, besides the recurrent input. If the input is already the result from an LSTM layer (or a feedforward layer) then the current LSTM can create a more complex feature representation of the current input. This model and its parameter were derieved from the extensive testing done in this [paper](https://reader.elsevier.com/reader/sd/pii/S2211379721000048?token=96B6C9E2813943F5D2FE4882F66A79AFA5E8779BC525996AA7E6F9EE1B924E254C50FC4994A800B07CE92EADF065D17B&originRegion=eu-west-1&originCreation=20210815022455).
 
 ```python
 # evaluating the best model
