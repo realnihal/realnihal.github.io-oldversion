@@ -51,6 +51,7 @@ The time-series data that we have must be converted into windows. It defines the
 Training and testing data is created by splitting the windowed data that we have. I have used a split ratio of 0.2.
 We are creating a model checkpointing callback using the [tensorflow callback function](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint). This allows us to save only the best model that is trained across many epochs.
 
+## Creating and training a Model
 
 ```python
 import TensorFlow as tf
@@ -104,19 +105,6 @@ def make_preds(pcases, model):
         pcases = np.append(pcases,pred)
     return pcases
 pred_cases = make_preds(cases, model_5)
-pred_cases[-10:]
-```
-
-
-
-
-    array([0.21659741, 0.20328695, 0.19203615, 0.18219881, 0.17360687,
-           0.16575938, 0.1582801 , 0.15125737, 0.14482188, 0.13891993])
-
-
-
-
-```python
 plt.figure(figsize=(12,5))
 plt.plot(pred_cases)
 plt.show()
@@ -126,7 +114,7 @@ plt.show()
     
 ![png](\img\posts\covid19\output_17_0.png)
     
-
+## Conclusions
 
 We can see the rising trend of an upcoming third wave in the country. We have to consider a lot of things before we take this model seriously, such as:
 
