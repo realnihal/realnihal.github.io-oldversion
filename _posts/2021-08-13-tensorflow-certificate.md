@@ -2,7 +2,7 @@
 layout: post
 title: "How I passed the TensorFlow Developer Certification"
 subtitle: "I decided to get TensorFlow Developer Certified. So I set myself up with a curriculum to sharpen my skills and took the certification exam yesterday. Turns out, I passed."
-background: '/img/posts/tensorflowcertificate/162882711420.png'
+background: 'img\posts\creditfraud\creditfraud.jpeg'
 ---
 
 The TensorFlow Develop Certificate was one of the many Milestones in my Journey into AI. At the end of July, I was nearing the start of my semester. I decided to prepare myself and take the TensorFlow Developer certification. And (August 12th) I took the test and passed.

@@ -1,0 +1,115 @@
+I"�B<h2 id="introduction">Introduction</h2>
+
+<p>The goal of this project is to give a fair estimate of covid cases in India. I found a published article on <a href="https://reader.elsevier.com/reader/sd/pii/S2211379721000048?token=96B6C9E2813943F5D2FE4882F66A79AFA5E8779BC525996AA7E6F9EE1B924E254C50FC4994A800B07CE92EADF065D17B&amp;originRegion=eu-west-1&amp;originCreation=20210815022455">Forecasting COVID-19 cases</a>. They were able to make predictions with an error of less than 2%. Here I have tried to implement their learnings and try to make predictions for the next few days.</p>
+
+<p>You can check out the complete code <a href="https://github.com/realnihal/Forecasting-COVID-19-cases">here</a>.</p>
+
+<h2 id="importing-data">Importing data</h2>
+
+<p>I have imported the covid-19 data from <a href="https://documenter.getpostman.com/view/10724784/SzYXXKmA">this source</a>. Many Volunteers have pre-cleaned and collected the data. We get access to various metrics but are only interested in the “Daily Case” counts.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># importing the Covid-19 time series data
+</span><span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://api.covid19india.org/csv/latest/case_time_series.csv'</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">'case_time_series.csv'</span>
+<span class="n">urllib</span><span class="p">.</span><span class="n">request</span><span class="p">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+</code></pre></div></div>
+<p>We extract the required data from our dataset and plot it to visualize the initial conditions.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># plotting the data
+</span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="n">daily_cases</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">"Covid Casesy"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">title</span><span class="p">(</span><span class="s">"Covid Cases per day in India"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">);</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="\img\posts\covid19\output_4_0.png" alt="png" /></p>
+
+<p>We have to normalize the data to increase the accuracy of the model.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Normalizing the data
+</span><span class="n">timesteps</span> <span class="o">=</span> <span class="n">daily_cases</span><span class="p">.</span><span class="n">index</span><span class="p">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">cases</span> <span class="o">=</span> <span class="n">daily_cases</span><span class="p">[</span><span class="s">"cases"</span><span class="p">].</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">cases</span> <span class="o">=</span> <span class="n">cases</span><span class="o">/</span><span class="mi">414280</span>
+</code></pre></div></div>
+
+<p>The time-series data that we have must be converted into windows. It defines the no of days the model looks into the past to predict the future. I have chosen to have the window size as 30 and the predicting horizon of 1 day. You can check out the <a href="https://github.com/realnihal/Forecasting-COVID-19-cases">complete code</a> to understand how I did it.
+Training and testing data is created by splitting the windowed data that we have. I have used a split ratio of 0.2.
+We are creating a model checkpointing callback using the <a href="https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint">tensorflow callback function</a>. This allows us to save only the best model that is trained across many epochs.</p>
+
+<h2 id="creating-and-training-a-model">Creating and Training a Model</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">TensorFlow</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="c1"># Let's build a Stacked LSTM model with the Functional API
+</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">layers</span><span class="p">.</span><span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">WINDOW_SIZE</span><span class="p">))</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Lambda</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">tf</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))(</span><span class="n">inputs</span><span class="p">)</span> <span class="c1"># expand input dimension to be compatible with LSTM
+</span><span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">LSTM</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s">"relu"</span><span class="p">,</span> <span class="n">return_sequences</span><span class="o">=</span><span class="bp">True</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span> 
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">LSTM</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s">"relu"</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s">"relu"</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">HORIZON</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">model_5</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"model_5_lstm"</span><span class="p">)</span>
+
+<span class="c1"># Compile model
+</span><span class="n">model_5</span><span class="p">.</span><span class="nb">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s">"mae"</span><span class="p">,</span>
+                <span class="n">optimizer</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">optimizers</span><span class="p">.</span><span class="n">Adam</span><span class="p">(</span><span class="mf">0.0005</span><span class="p">))</span>
+
+<span class="n">history</span> <span class="o">=</span> <span class="n">model_5</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_windows</span><span class="p">,</span>
+            <span class="n">train_labels</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">test_windows</span><span class="p">,</span> <span class="n">test_labels</span><span class="p">),</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">create_model_checkpoint</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">model_5</span><span class="p">.</span><span class="n">name</span><span class="p">)])</span>
+</code></pre></div></div>
+<p>The main reason for stacking LSTM is to allow for greater model complexity. In a simple feedforward net, we stack layers to create a hierarchical feature representation of the input data for some machine learning task. The same applies to stacked LSTM’s.
+At every time step, an LSTM, besides the recurrent input. If the information is already the result from an LSTM layer (or a feedforward layer), then the current LSTM can create a more complex feature representation of the current input. This model and its parameter were derived from the extensive testing done in this <a href="https://reader.elsevier.com/reader/sd/pii/S2211379721000048?token=96B6C9E2813943F5D2FE4882F66A79AFA5E8779BC525996AA7E6F9EE1B924E254C50FC4994A800B07CE92EADF065D17B&amp;originRegion=eu-west-1&amp;originCreation=20210815022455">paper</a>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># evaluating the best model
+</span><span class="n">model_5</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">models</span><span class="p">.</span><span class="n">load_model</span><span class="p">(</span><span class="s">"model_experiments/model_5_lstm/"</span><span class="p">)</span>
+<span class="n">model_5</span><span class="p">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_windows</span><span class="p">,</span> <span class="n">test_labels</span><span class="p">)</span>
+</code></pre></div></div>
+<p>0.027053499594330788</p>
+
+<h2 id="results">Results</h2>
+
+<p>We can see that we have achieved an error of 2.7%, which is slightly higher than the original <a href="https://reader.elsevier.com/reader/sd/pii/S2211379721000048?token=96B6C9E2813943F5D2FE4882F66A79AFA5E8779BC525996AA7E6F9EE1B924E254C50FC4994A800B07CE92EADF065D17B&amp;originRegion=eu-west-1&amp;originCreation=20210815022455">paper</a>. Let’s try to use this model to predict future cases.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">make_preds</span><span class="p">(</span><span class="n">pcases</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="n">no_of_preds</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">no_of_preds</span><span class="p">):</span>
+        <span class="n">eval_case</span> <span class="o">=</span> <span class="n">pcases</span><span class="p">[</span><span class="o">-</span><span class="mi">30</span><span class="p">:].</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">30</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">eval_case</span><span class="p">)</span>
+        <span class="n">pcases</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">pcases</span><span class="p">,</span><span class="n">pred</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pcases</span>
+<span class="n">pred_cases</span> <span class="o">=</span> <span class="n">make_preds</span><span class="p">(</span><span class="n">cases</span><span class="p">,</span> <span class="n">model_5</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pred_cases</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="\img\posts\covid19\output_17_0.png" alt="png" /></p>
+
+<h2 id="conclusions">Conclusions</h2>
+
+<p>We can see the rising trend of an upcoming third wave in the country. We have to consider a lot of things before we take this model seriously, such as:</p>
+
+<ol>
+  <li>
+    <p>We are using a single feature (univariate) to make the prediction. This may not be accurate as the actual trends could be more correlated to other factors.</p>
+  </li>
+  <li>
+    <p>The further in the future we want to predict, the less accurate the model becomes. This means that the actual slope may not be exact. The peak or duration of the third wave might by varying a lot.</p>
+  </li>
+</ol>
+
+<p>Nevertheless, this is an alarming sign that the public should be prepared. I really wish this doesn’t happen and the model is wrong, but it’s still a good idea to increase precautions and save yourself.</p>
+
+<p><a href="https://github.com/realnihal/Forecasting-COVID-19-cases">Click here to check out the complete code</a>.</p>
+
+<p>Please feel free to share your thoughts on this on any of my socials (<em>linked below</em>). I would love to hear from you. Be safe and Peace out!</p>
+:ET
