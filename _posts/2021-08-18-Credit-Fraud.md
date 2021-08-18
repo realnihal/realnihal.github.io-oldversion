@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Credit Card fraud detection"
+title: "Credit Card Fraud Detection"
 subtitle: "Labeling anonymized credit card transactions as fraudulent or genuine."
 background: '/img/posts/creditfraud/creditfraud.jpeg'
 ---
