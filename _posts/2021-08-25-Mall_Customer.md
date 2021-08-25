@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Mall Customer segmentation using unsupervised ML"
+title: "Mall Customer segmentation using Un-Supervised ML"
 subtitle: "Understanding the customer habits and segregating them using Un-Supervised ML tools."
 background: '/img/posts/mallcustomers/In_Orbit_Mall.jpg'
 ---
