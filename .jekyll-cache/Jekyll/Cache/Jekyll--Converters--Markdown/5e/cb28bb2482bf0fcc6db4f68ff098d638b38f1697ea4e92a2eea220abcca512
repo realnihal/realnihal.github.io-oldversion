@@ -1,0 +1,91 @@
+I"�)<h2 id="introduction">Introduction</h2>
+<p>Ever wondered what it feels like to have your assistant. Someone that can do things that are personal to you. Luckily in modern times, we have many such services like “Alexa” and “Siri” to name a few. These services use your voice and collect data on you. To some people, this may not be fancy as it has privacy concerns.</p>
+
+<p>So let’s work on making our <strong>Virtual-Assistant</strong>. First order of business, let’s look at a couple of things that we want our assistant to do.</p>
+
+<ol>
+  <li>Tell me the time</li>
+  <li>Tell me a joke</li>
+  <li>Tell me facts about anything I ask.</li>
+  <li>Play a song on request</li>
+</ol>
+
+<p><strong>Most importantly!</strong></p>
+
+<ol>
+  <li><strong>Have an utterly natural conversation (just like Alexa or Siri!)</strong></li>
+</ol>
+
+<h3 id="getting-started">Getting Started</h3>
+
+<p>The design I want to make involves the user “speaking out” the command to the computer (typing it is lame).</p>
+
+<p>We are going to use the <a href="https://pypi.org/project/SpeechRecognition/">speech recognition</a> module in python to use. There are many backends that you can use with speech recognition. <strong>Sphinx</strong> is recommended for in device recommendation(more privacy). I will be using the Speech API of Google Cloud Platform(GCP).</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">takecommand</span><span class="p">():</span>
+	<span class="k">with</span> <span class="n">sr</span><span class="p">.</span><span class="n">Microphone</span><span class="p">()</span> <span class="k">as</span> <span class="n">source</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">"Listening!"</span><span class="p">)</span>
+		<span class="n">audio</span> <span class="o">=</span> <span class="n">r</span><span class="p">.</span><span class="n">listen</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">"Audio Captured"</span><span class="p">)</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">command</span> <span class="o">=</span> <span class="n">r</span><span class="p">.</span><span class="n">recognize_google</span><span class="p">(</span><span class="n">audio</span><span class="p">)</span>
+		<span class="n">command</span> <span class="o">=</span> <span class="n">command</span><span class="p">.</span><span class="n">lower</span><span class="p">()</span>
+		<span class="k">if</span> <span class="s">'jarvis'</span> <span class="ow">in</span> <span class="n">command</span><span class="p">:</span>
+			<span class="n">command</span> <span class="o">=</span> <span class="n">command</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span><span class="s">'jarvis'</span><span class="p">,</span> <span class="s">''</span><span class="p">)</span>
+	<span class="k">except</span> <span class="n">sr</span><span class="p">.</span><span class="n">UnknownValueError</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">"Jarvis could not understand audio"</span><span class="p">)</span>
+		<span class="n">command</span> <span class="o">=</span> <span class="s">"nothing"</span>
+	<span class="k">except</span> <span class="n">sr</span><span class="p">.</span><span class="n">RequestError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">"Could not request results from Google Speech Recognition service; {0}"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+		<span class="n">command</span> <span class="o">=</span> <span class="s">"nothing"</span>
+<span class="k">return</span> <span class="n">command</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>And if you noticed, Yes I called my assistant JARVIS :)</strong></p>
+</blockquote>
+
+<p>The return from the <code class="language-plaintext highlighter-rouge">recognise_google()</code> function is a text that is extracted from our audio. First, let’s filter our command for the trigger word Jarvis. After that, we can remove the trigger word from the command and return the string.</p>
+
+<p>Next, we are working on functionality. I have linked the resources below to useful python libraries, and you can always check out my code to see how they are implemented. They are pretty straightforward to figure out.</p>
+
+<ul>
+  <li><a href="https://pypi.org/project/pyjokes/">Pyjokes</a> - One-liner jokes for programmers (jokes as a service).</li>
+  <li><a href="https://docs.python.org/3/library/datetime.html">Datetime</a> - Basic Date and Time querying.</li>
+  <li><a href="https://pypi.org/project/wikipedia/">Wikipedia</a> - Module to query wiki articles.</li>
+  <li><a href="https://pypi.org/project/pywhatkit/">pywhatkit</a> - Can be used to do many things, including playing youtube videos.</li>
+  <li><a href="https://pypi.org/project/pyttsx3/">pyttsx3</a> - Text to Speech (TTS) library for Python Works without internet connection or delay. Supports multiple TTS engines, including Sapi5, nsss, and speak.</li>
+</ul>
+
+<p>Our model can now speak, tell jokes, state facts, remind the time, and play music using these libraries.  You can add other features like weather or WhatsApp reminders; the world is at your fingertips. That’s great now; let’s start pushing the boundaries. We want to go beyond this. We want our model to converse like a human.</p>
+
+<blockquote>
+  <p>We want our model to converse like a human.</p>
+</blockquote>
+
+<h3 id="dialogpt">DialoGPT</h3>
+<p>Thanks to our friends at Microsoft, we have access to <a href="https://www.microsoft.com/en-us/research/project/large-scale-pretraining-for-response-generation/">DialoGPT</a>. DialoGPT adapts pretraining techniques to response generation <strong>using hundreds of Gigabytes of colloquial data.</strong> Like GPT-2, DialoGPT is formulated as an <em>autoregressive</em> (AR) language model, and uses a multi-layer transformer as model architecture. Unlike GPT-2, which trains on general text data, DialoGPT draws on <strong>147M multi-turn dialogues extracted from Reddit discussion threads</strong>. Our implementation is based on the <a href="https://github.com/huggingface/transfer-learning-conv-ai">huggingface pytorch-transformer</a> and <a href="https://github.com/openai/gpt-2">OpenAI GPT-2</a>.</p>
+
+<p>Please note that this model is highly resource-intensive and may lag your computer. Based on my testing, If you use Cuda compatible GPU to run python or have 4+ cores on your CPU, you should be okay. The following code has been added to the project to turn our assistant into an intelligent assistant.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="s">"Initialising the Model 1/2"</span><span class="p">)</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="p">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s">"microsoft/DialoGPT-large"</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"Initialising the Model 2/2"</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="p">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s">"microsoft/DialoGPT-large"</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"Initialising done!"</span><span class="p">)</span>
+<span class="n">new_user_input_ids</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="n">command</span> <span class="o">+</span> <span class="n">tokenizer</span><span class="p">.</span><span class="n">eos_token</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s">'pt'</span><span class="p">)</span>
+<span class="n">bot_input_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">new_user_input_ids</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">chat_history_ids</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">generate</span><span class="p">(</span><span class="n">bot_input_ids</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">pad_token_id</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">.</span><span class="n">eos_token_id</span><span class="p">)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="n">chat_history_ids</span><span class="p">[:,</span> <span class="n">bot_input_ids</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:][</span><span class="mi">0</span><span class="p">],</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="n">talk</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Now everything is ready, and it’s time to test it! Let’s see how our model performs and whether it’s able to understand me.</p>
+
+<p># Image</p>
+
+<p>Great, this is amazing! Our assistant seems to be alive and can understand and converse with us. This is a fantastic success!</p>
+
+<p>You can feel free to check out my <a href="https://github.com/realnihal/Virtual-Assistant-using-DialoGPT">code in GitHub here</a>. If you have any questions, you are welcome to contact me on any of my socials linked below, and with that, Peace out!</p>
+
+:ET
