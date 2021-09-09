@@ -56,11 +56,11 @@ The return from the `recognise_google()` function is a text that is extracted fr
 
 Next, we are working on functionality. I have linked the resources below to useful python libraries, and you can always check out my code to see how they are implemented. They are pretty straightforward to figure out.
 
- - [Pyjokes](https://pypi.org/project/pyjokes/) - One-liner jokes for programmers (jokes as a service).
- - [Datetime](https://docs.python.org/3/library/datetime.html) - Basic Date and Time querying.
- - [Wikipedia](https://pypi.org/project/wikipedia/) - Module to query wiki articles.
- - [pywhatkit](https://pypi.org/project/pywhatkit/) - Can be used to do many things, including playing youtube videos.
- - [pyttsx3](https://pypi.org/project/pyttsx3/) - Text to Speech (TTS) library for Python Works without internet connection or delay. Supports multiple TTS engines, including Sapi5, nsss, and speak.
+ - [**Pyjokes**](https://pypi.org/project/pyjokes/) - One-liner jokes for programmers (jokes as a service).
+ - [**Datetime**](https://docs.python.org/3/library/datetime.html) - Basic Date and Time querying.
+ - [**Wikipedia**](https://pypi.org/project/wikipedia/) - Module to query wiki articles.
+ - [**pywhatkit**](https://pypi.org/project/pywhatkit/) - Can be used to do many things, including playing youtube videos.
+ - [**pyttsx3**](https://pypi.org/project/pyttsx3/) - Text to Speech (TTS) library for Python Works without internet connection or delay. Supports multiple TTS engines, including Sapi5, nsss, and speak.
 
 Our model can now speak, tell jokes, state facts, remind the time, and play music using these libraries.  You can add other features like weather or WhatsApp reminders; the world is at your fingertips. That's great now; let's start pushing the boundaries. We want to go beyond this. We want our model to converse like a human.
 

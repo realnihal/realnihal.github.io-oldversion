@@ -1,5 +1,7 @@
-I"�)<h2 id="introduction">Introduction</h2>
+I"6+<h2 id="introduction">Introduction</h2>
 <p>Ever wondered what it feels like to have your assistant. Someone that can do things that are personal to you. Luckily in modern times, we have many such services like “Alexa” and “Siri” to name a few. These services use your voice and collect data on you. To some people, this may not be fancy as it has privacy concerns.</p>
+
+<p>You can check out the complete <a href="https://github.com/realnihal/Virtual-Assistant-using-DialoGPT">code on github here</a>.</p>
 
 <p>So let’s work on making our <strong>Virtual-Assistant</strong>. First order of business, let’s look at a couple of things that we want our assistant to do.</p>
 
@@ -50,11 +52,11 @@
 <p>Next, we are working on functionality. I have linked the resources below to useful python libraries, and you can always check out my code to see how they are implemented. They are pretty straightforward to figure out.</p>
 
 <ul>
-  <li><a href="https://pypi.org/project/pyjokes/">Pyjokes</a> - One-liner jokes for programmers (jokes as a service).</li>
-  <li><a href="https://docs.python.org/3/library/datetime.html">Datetime</a> - Basic Date and Time querying.</li>
-  <li><a href="https://pypi.org/project/wikipedia/">Wikipedia</a> - Module to query wiki articles.</li>
-  <li><a href="https://pypi.org/project/pywhatkit/">pywhatkit</a> - Can be used to do many things, including playing youtube videos.</li>
-  <li><a href="https://pypi.org/project/pyttsx3/">pyttsx3</a> - Text to Speech (TTS) library for Python Works without internet connection or delay. Supports multiple TTS engines, including Sapi5, nsss, and speak.</li>
+  <li><a href="https://pypi.org/project/pyjokes/"><strong>Pyjokes</strong></a> - One-liner jokes for programmers (jokes as a service).</li>
+  <li><a href="https://docs.python.org/3/library/datetime.html"><strong>Datetime</strong></a> - Basic Date and Time querying.</li>
+  <li><a href="https://pypi.org/project/wikipedia/"><strong>Wikipedia</strong></a> - Module to query wiki articles.</li>
+  <li><a href="https://pypi.org/project/pywhatkit/"><strong>pywhatkit</strong></a> - Can be used to do many things, including playing youtube videos.</li>
+  <li><a href="https://pypi.org/project/pyttsx3/"><strong>pyttsx3</strong></a> - Text to Speech (TTS) library for Python Works without internet connection or delay. Supports multiple TTS engines, including Sapi5, nsss, and speak.</li>
 </ul>
 
 <p>Our model can now speak, tell jokes, state facts, remind the time, and play music using these libraries.  You can add other features like weather or WhatsApp reminders; the world is at your fingertips. That’s great now; let’s start pushing the boundaries. We want to go beyond this. We want our model to converse like a human.</p>
@@ -66,7 +68,7 @@
 <h3 id="dialogpt">DialoGPT</h3>
 <p>Thanks to our friends at Microsoft, we have access to <a href="https://www.microsoft.com/en-us/research/project/large-scale-pretraining-for-response-generation/">DialoGPT</a>. DialoGPT adapts pretraining techniques to response generation <strong>using hundreds of Gigabytes of colloquial data.</strong> Like GPT-2, DialoGPT is formulated as an <em>autoregressive</em> (AR) language model, and uses a multi-layer transformer as model architecture. Unlike GPT-2, which trains on general text data, DialoGPT draws on <strong>147M multi-turn dialogues extracted from Reddit discussion threads</strong>. Our implementation is based on the <a href="https://github.com/huggingface/transfer-learning-conv-ai">huggingface pytorch-transformer</a> and <a href="https://github.com/openai/gpt-2">OpenAI GPT-2</a>.</p>
 
-<p>Please note that this model is highly resource-intensive and may lag your computer. Based on my testing, If you use Cuda compatible GPU to run python or have 4+ cores on your CPU, you should be okay. The following code has been added to the project to turn our assistant into an intelligent assistant.</p>
+<p>Please note that this model is highly resource-intensive and may lag your computer. Based on my testing, If you use Cuda compatible GPU to run python or have 4+ cores on your CPU, you should be okay. The following code has been added to the project to turn our assistant into an intelligent assistant. In other words now our model must be able to understand human speech and give apt responses to it.</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="s">"Initialising the Model 1/2"</span><span class="p">)</span>
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="p">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s">"microsoft/DialoGPT-large"</span><span class="p">)</span>
@@ -82,9 +84,9 @@
 </code></pre></div></div>
 <p>Now everything is ready, and it’s time to test it! Let’s see how our model performs and whether it’s able to understand me.</p>
 
-<p>![\img\posts\assistant\test.jpg]</p>
+<p><img src="\img\posts\assistant\test.jpg" alt="test case" /></p>
 
-<p>Great, this is amazing! Our assistant seems to be alive and can understand and converse with us. This is a fantastic success!</p>
+<p>Great, this is amazing! Our assistant seems to be alive and can understand and converse with us. And it was lovely to hear her voice. This is a fantastic success!</p>
 
 <p>You can feel free to check out my <a href="https://github.com/realnihal/Virtual-Assistant-using-DialoGPT">code in GitHub here</a>. If you have any questions, you are welcome to contact me on any of my socials linked below, and with that, Peace out!</p>
 
